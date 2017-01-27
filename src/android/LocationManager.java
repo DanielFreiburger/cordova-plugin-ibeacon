@@ -90,6 +90,8 @@ public class LocationManager extends CordovaPlugin implements BeaconConsumer {
     private BroadcastReceiver broadcastReceiver;
     private BluetoothAdapter bluetoothAdapter;
 
+    private BeaconTransmitter beaconTransmitter = null;
+    private BeaconParser beaconParser = null;
 
     /**
      * Constructor.
@@ -1164,11 +1166,11 @@ public class LocationManager extends CordovaPlugin implements BeaconConsumer {
                         .build();
                 */
                 debugLog("Advertisement start STEP BeaconParser ");
-                BeaconParser beaconParser = new BeaconParser()
+                beaconParser = new BeaconParser()
                         .setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24");
 
                 debugLog("Advertisement start STEP BeaconTransmitter ");
-                BeaconTransmitter beaconTransmitter = new BeaconTransmitter(getApplicationContext(), beaconParser);
+                beaconTransmitter = new BeaconTransmitter(getApplicationContext(), beaconParser);
 
                 debugLog("[DEBUG] BeaconTransmitter: "+beaconTransmitter);
                 beaconTransmitter.startAdvertising(beacon, new AdvertiseCallback() {
@@ -1204,8 +1206,12 @@ public class LocationManager extends CordovaPlugin implements BeaconConsumer {
             @Override
             public PluginResult run() {
 
-                //not supported on Android
-                PluginResult result = new PluginResult(PluginResult.Status.ERROR, "iBeacon Advertising is not supported on Android");
+                if (beaconParser != null && beaconTransmitter != null) {
+                    debugLog("Advertisement stop");
+                    debugLog("[DEBUG] BeaconTransmitter: "+beaconTransmitter);
+                    beaconTransmitter.stopAdvertising();
+                }
+                PluginResult result = new PluginResult(PluginResult.Status.OK, false);
                 result.setKeepCallback(true);
                 return result;
 
